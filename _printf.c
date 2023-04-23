@@ -1,66 +1,68 @@
+#include <stdarg.h>
+#include <unistd.h>
 #include "main.h"
 
-void print_buffer(char buffer[], int *buff_ind);
-
 /**
- * _printf - Printf function
- * @format: format.
- * Return: Printed chars.
+ * _printf - produces output according to a format
+ * @format: character string containing zero or more directives
+ *
+ * Return: number of characters printed
  */
 int _printf(const char *format, ...)
 {
-	int i, printed = 0, printed_chars = 0;
-	int flags, width, precision, size, buff_ind = 0;
-	va_list list;
-	char buffer[BUFF_SIZE];
+	va_list args;
+	int i = 0, count = 0;
 
-	if (format == NULL)
-		return (-1);
+		va_start(args, format);
 
-	va_start(list, format);
-
-	for (i = 0; format && format[i] != '\0'; i++)
+	while (format && format[i])
 	{
-		if (format[i] != '%')
-		{
-			buffer[buff_ind++] = format[i];
-			if (buff_ind == BUFF_SIZE)
-				print_buffer(buffer, &buff_ind);
-			/* write(1, &format[i], 1);*/
-			printed_chars++;
-		}
-		else
-		{
-			print_buffer(buffer, &buff_ind);
-			flags = get_flags(format, &i);
-			width = get_width(format, &i, list);
-			precision = get_precision(format, &i, list);
-			size = get_size(format, &i);
-			++i;
-			printed = handle_print(format, &i, list, buffer,
-				flags, width, precision, size);
-			if (printed == -1)
-				return (-1);
-			printed_chars += printed;
+	if (format[i] == '%')
+	{
+		i++;
+
+		switch (format[i])
+	{
+		case 'c':
+			count += write(1, &(va_arg(args, int)), 1);
+		break;
+		case 's':
+			count += write(1, &(va_arg(args, int)), 1);
+		break;
+		case '%':
+			count += write(1, "%", 1);
+		break;
+		default:
+			count += write(1, &format[i - 1], 1);
+			count += write(1, &format[i], 1);
 		}
 	}
+	else
+	{
+		count += write(1, &format[i], 1);
+	}
 
-	print_buffer(buffer, &buff_ind);
+	i++;
+	}
 
-	va_end(list);
+		va_end(args);
 
-	return (printed_chars);
+	return (count);
 }
 
 /**
- * print_buffer - Prints the contents of the buffer if it exist
- * @buffer: Array of chars
- * @buff_ind: Index at which to add next char, represents the length.
+ * _strlen - finds the length of a string
+ * @s: string to find length of
+ *
+ * Return: length of string
  */
-void print_buffer(char buffer[], int *buff_ind)
+int _strlen(char *s)
 {
-	if (*buff_ind > 0)
-		write(1, &buffer[0], *buff_ind);
+	int len = 0;
 
-	*buff_ind = 0;
+	while (s && *s++)
+	len++;
+
+	return (len);
 }
+
