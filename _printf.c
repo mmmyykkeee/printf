@@ -1,68 +1,66 @@
-#include <stdarg.h>
-#include <unistd.h>
 #include "main.h"
 
+void print_buffer(char buffer[], int *buff_ind);
+
 /**
- * _printf - produces output according to a format
- * @format: character string containing zero or more directives
- *
- * Return: number of characters printed
+ * _printf - Printf function
+ * @format: format.
+ * Return: Printed chars.
  */
 int _printf(const char *format, ...)
 {
-	va_list args;
-	int i = 0, count = 0;
+	int i, printed = 0, printed_chars = 0;
+	int flags, width, precision, size, buff_ind = 0;
+	va_list list;
+	char buffer[BUFF_SIZE];
 
-		va_start(args, format);
+	if (format == NULL)
+		return (-1);
 
-	while (format && format[i])
-	{
-	if (format[i] == '%')
-	{
-		i++;
+	va_start(list, format);
 
-		switch (format[i])
+	for (i = 0; format && format[i] != '\0'; i++)
 	{
-		case 'c':
-			count += write(1, &(va_arg(args, int)), 1);
-		break;
-		case 's':
-			count += write(1, &(va_arg(args, int)), 1);
-		break;
-		case '%':
-			count += write(1, "%", 1);
-		break;
-		default:
-			count += write(1, &format[i - 1], 1);
-			count += write(1, &format[i], 1);
+		if (format[i] != '%')
+		{
+			buffer[buff_ind++] = format[i];
+			if (buff_ind == BUFF_SIZE)
+				print_buffer(buffer, &buff_ind);
+			/* write(1, &format[i], 1);*/
+			printed_chars++;
+		}
+		else
+		{
+			print_buffer(buffer, &buff_ind);
+			flags = get_flags(format, &i);
+			width = get_width(format, &i, list);
+			precision = get_precision(format, &i, list);
+			size = get_size(format, &i);
+			++i;
+			printed = handle_print(format, &i, list, buffer,
+				flags, width, precision, size);
+			if (printed == -1)
+				return (-1);
+			printed_chars += printed;
 		}
 	}
-	else
-	{
-		count += write(1, &format[i], 1);
-	}
 
-	i++;
-	}
+	print_buffer(buffer, &buff_ind);
 
-		va_end(args);
+	va_end(list);
 
-	return (count);
+	return (printed_chars);
 }
 
 /**
- * _strlen - finds the length of a string
- * @s: string to find length of
- *
- * Return: length of string
+ * print_buffer - Prints the contents of the buffer if it exist
+ * @buffer: Array of chars
+ * @buff_ind: Index at which to add next char, represents the length.
  */
-int _strlen(char *s)
+void print_buffer(char buffer[], int *buff_ind)
 {
-	int len = 0;
+	if (*buff_ind > 0)
+		write(1, &buffer[0], *buff_ind);
 
-	while (s && *s++)
-	len++;
-
-	return (len);
+	*buff_ind = 0;
 }
-
