@@ -1,68 +1,63 @@
 #include <stdarg.h>
-#include <unistd.h>
-#include "main.h"
+#include <stdio.h>
 
 /**
- * _printf - produces output according to a format
- * @format: character string containing zero or more directives
+ * _printf - A simple implementation of printf
+ * @format: The format string
  *
- * Return: number of characters printed
+ * Return: The number of characters printed
  */
 int _printf(const char *format, ...)
 {
-	va_list args;
-	int i = 0, count = 0;
+int count = 0;
+va_list args;
+const char *ptr;
 
-		va_start(args, format);
+va_start(args, format);
 
-	while (format && format[i])
-	{
-	if (format[i] == '%')
-	{
-		i++;
-
-		switch (format[i])
-	{
-		case 'c':
-			count += write(1, &(va_arg(args, int)), 1);
-		break;
-		case 's':
-			count += write(1, &(va_arg(args, int)), 1);
-		break;
-		case '%':
-			count += write(1, "%", 1);
-		break;
-		default:
-			count += write(1, &format[i - 1], 1);
-			count += write(1, &format[i], 1);
-		}
-	}
-	else
-	{
-		count += write(1, &format[i], 1);
-	}
-
-	i++;
-	}
-
-		va_end(args);
-
-	return (count);
-}
-
-/**
- * _strlen - finds the length of a string
- * @s: string to find length of
- *
- * Return: length of string
- */
-int _strlen(char *s)
+for (ptr = format; *ptr != '\0'; ptr++)
 {
-	int len = 0;
+if (*ptr == '%')
+{
+ptr++;
+switch (*ptr)
+{
+case 'c':
+{
+char c = (char)va_arg(args, int);
 
-	while (s && *s++)
-	len++;
+putchar(c);
+count++;
+break;
+}
+case 's':
+{
+const char *str = va_arg(args, const char *);
 
-	return (len);
+for (; *str != '\0'; str++)
+{
+putchar(*str);
+count++;
+}
+break;
+}
+case '%':
+{
+putchar('%');
+count++;
+break;
+}
+default:
+break;
+}
+}
+else
+{
+putchar(*ptr);
+count++;
+}
 }
 
+va_end(args);
+return (count);
+}
